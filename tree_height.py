@@ -61,12 +61,12 @@ def main():
     if input_method == "F":
         file_dir = input().strip()
         if str(file_dir[-1]) != "a":
-            n, parents = input_from_file(file_dir)
+            n, parents = input_file(file_dir)
             if n and parents:
                 height = height_c(n, parents)
                 print(int(height))
     elif input_method == "I":
-        n, parents = input_from_keyboard()
+        n, parents = input_keyboard()
         if n and parents:
             height = height_c(n, parents)
             print(int(height))
