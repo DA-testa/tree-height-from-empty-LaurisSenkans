@@ -2,66 +2,43 @@
 
 import sys
 import threading
-import numpy
-
+import numpy as np
 
 def compute_height(n, parents):
-    # Create an array to store the height of each node
-    heights = [-1] * n
-
-    # Find the root node
-    root = None
-    for i in range(n):
-        if parents[i] == -1:
+    children = [[] for _ in range(n)]
+    for i, p in enumerate(parents):
+        if p == -1:
             root = i
-            break
-
-    # Define a recursive function to compute the height of each node
-    def dfs(node):
-        if heights[node] != -1:
-            return heights[node]
-
-        if parents[node] == -1:
-            heights[node] = 1
         else:
-            heights[node] = 1 + dfs(parents[node])
-
+            children[p].append(i)
+    heights = np.zeros(n, dtype=np.int32)
+    def compute_height_util(node):
+        if not children[node]:
+            return 0
+        child_heights = [compute_height_util(child) for child in children[node]]
+        heights[node] = 1 + np.max(child_heights)
         return heights[node]
-
-    # Compute the height of each node starting from the root
-    dfs(root)
-
-    # Return the maximum height
-    return max(heights)
-
+    compute_height_util(root)
+    return np.max(heights)
 
 def main():
-    # Read input from keyboard or file
-    input_type = input("Enter input type (K for keyboard, F for file): ")
-    if input_type == "K":
+    input_type = input("Enter input type (I for keyboard, F for file): ")
+    if input_type == "I":
         n = int(input())
-        parents = list(map(int, input().split()))
+        parents = np.array(list(map(int, input().split())))
     elif input_type == "F":
-        file_name = input("Enter file name (without the letter a): ")
-        if "a" in file_name:
-            print("File name cannot contain the letter a.")
+        filename = input("Enter filename (don't use letter a): ")
+        if 'a' in filename:
+            print("Invalid filename")
             return
-        try:
-            with open(f"./input/{file_name}", "r") as f:
-                n = int(f.readline())
-                parents = list(map(int, f.readline().split()))
-        except FileNotFoundError:
-            print("File not found.")
-            return
+        with open(f"folder/{filename}") as file:
+            n = int(file.readline())
+            parents = np.array(list(map(int, file.readline().split())))
     else:
-        print("Invalid input type.")
+        print("Invalid input type")
         return
-
-    # Compute the height of the tree and output the result
     print(compute_height(n, parents))
 
-
-sys.setrecursionlimit(10**7)  # max depth of recursion
-threading.stack_size(2**27)   # new thread will get stack of such size
+sys.setrecursionlimit(10**7)
+threading.stack_size(2**27)
 threading.Thread(target=main).start()
-main()
